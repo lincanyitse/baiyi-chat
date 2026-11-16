@@ -46,7 +46,7 @@
 
 ## 直接用
 
-从 [Releases](https://github.com/lincanyitse/baiyi-chat/releases) 下载对应平台的压缩包，解压后双击 `baiyi.exe`：
+从 [Releases](https://github.com/lincanyitse/baiyi-chat/releases) 下载对应平台的压缩包。解压后里面只有一个可执行文件（Windows 是 `baiyi-windows-amd64.exe`），双击即可运行：
 
 - 会自动启动本地服务并打开浏览器，界面里配置模型服务与密钥
 - 再启动一次不会重复开标签页，只在端口变化时打开新页
