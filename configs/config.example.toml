@@ -1,0 +1,199 @@
+# 白泽配置示例。复制到 <数据目录>/config.toml 后按需修改。
+# 密钥只引用环境变量，绝不写在文件里。
+
+# data_dir = ""                   # 留空则用 %APPDATA%\baiyi；写空串会覆盖默认值，故注释掉
+
+[log]
+level       = "info"
+format      = "text"
+max_size_mb = 20
+max_backups = 5
+
+# ---- Web 服务（M3）----
+# listen 默认 127.0.0.1:8787。改成 0.0.0.0 之前想清楚：
+# 口令只防同机他人，不是远程安全防护。
+[web]
+listen          = "127.0.0.1:8787"
+# read_only_tools 为真时，RiskWrite / RiskDangerous 的工具根本不下发给模型。
+# 默认 false：Web 有审批弹窗，写类工具会在执行前询问。
+# 想要一个永远不能改动任何东西的只读助手时，把它设为 true。
+read_only_tools = false
+
+# 口令不在这里配置：首次打开 Web 界面时设置，哈希存数据库，
+# 忘记时用 `baiyi reset-password` 清除。
+
+# 三种协议的差别只在 kind，base_url 按服务商文档填写：
+#   kind = "openai-compat"  → POST {base_url}/chat/completions
+#   kind = "responses"      → POST {base_url}/responses
+#   kind = "anthropic"      → POST {base_url}/messages
+# 本地网关（例如同时暴露这三条路径的反代）写法相同，把 base_url 换成网关地址即可。
+
+# ---- OpenAI 兼容协议（Chat Completions）----
+[providers.openai]
+kind        = "openai-compat"
+base_url    = "https://api.example.com/v1"
+api_key_env = "OPENAI_API_KEY"
+timeout_s   = 120
+
+[providers.openai.models."gpt-4o-mini"]
+context_window = 128000
+max_output     = 8192
+tools          = true
+vision         = false
+thinking       = false
+prefix_cache   = false
+price_in       = 0
+price_out      = 0
+
+# ---- OpenAI Responses 协议（需要时取消注释，并把 route 指过去）----
+# Responses 的 reasoning summary 与工具调用事件结构与 Chat 不同，由 responses 适配器吸收。
+# [providers.openai-responses]
+# kind        = "responses"
+# base_url    = "https://api.example.com/v1"
+# api_key_env = "OPENAI_API_KEY"
+# timeout_s   = 120
+#
+# [providers.openai-responses.models."gpt-4o-mini"]
+# context_window = 128000
+# max_output     = 8192
+# tools          = true
+# thinking       = true
+
+# ---- Anthropic 原生协议（需要时取消注释）----
+# [providers.anthropic]
+# kind        = "anthropic"
+# base_url    = "https://api.anthropic.com/v1"
+# api_key_env = "ANTHROPIC_API_KEY"
+# timeout_s   = 120
+#
+# [providers.anthropic.models."claude-sonnet-4-5"]
+# context_window = 200000
+# max_output     = 8192
+# tools          = true
+# vision         = true
+# thinking       = true
+# prefix_cache   = true
+
+# ---- 任务路由 ----
+# 候选写成 "provider 名/模型名"，前面的失败时自动试下一个。
+[route.chat]
+candidates = [
+  "openai/gpt-4o-mini",
+]
+
+[route.tool_use]
+candidates = [
+  "openai/gpt-4o-mini",
+]
+
+[session]
+max_steps        = 12
+turn_timeout_s   = 180
+stream_timeout_s = 120
+max_tool_calls   = 20
+
+# ---- 技能目录（留空则用 <data_dir>/skills）----
+# skills_dir = "skills"
+
+# ---- MCP 外部工具服务器 ----
+# 每个 server 的工具会以 mcp__<alias>__<tool> 的形式出现
+# （超长或含非法字符时退化为 mcp_<alias12>_<hash>）。
+# 单个 server 连不上只跳过它，不影响启动。
+# 也可以在 Web 界面的「设置 → 插件」里管理，改这里改效果一样。
+
+# [[mcp]]
+# alias     = "fs"
+# transport = "stdio"          # stdio | http
+# command   = "npx"
+# args      = ["-y", "@modelcontextprotocol/server-filesystem", "./docs"]
+# risk      = "read"           # read（自动执行）| write | dangerous（每次审批）
+# enabled   = true
+# # allowed_tools = ["read_file", "list_directory"]   # 留空表示全部允许
+
+# [[mcp]]
+# alias     = "remote"
+# transport = "http"
+# url       = "http://127.0.0.1:3000/mcp"
+# enabled   = false
+
+# ---- 知识库：嵌入与重排 ----
+#
+# kind 决定后端：
+#   openai  OpenAI 兼容（/embeddings），覆盖硅基流动、百炼、OpenAI、自建
+#   ollama  本地 Ollama（/api/embeddings）
+#   custom  自定义 HTTP：模板化请求体 + 点路径取响应
+#   fake    确定性伪向量，只用于跑通链路，没有语义
+#   none    不启用（检索退化为纯关键词，功能仍可用）
+#
+# dims 必须与模型实际维度一致。OpenAI 兼容协议不返回维度，
+# 写错会导致检索时报「向量维度不一致」。bge-m3 = 1024。
+#
+# batch_size 只对批量接口有意义（openai）。Ollama 的 /api/embeddings
+# 是单条接口，配了也会被它内部逐条处理——实测并发无收益，因为
+# Ollama 在单机 CPU 上有全局推理锁。用 CPU 跑 bge-m3 约 1-2 秒/chunk，
+# 索引 1000 个 chunk 需要半小时，属正常。
+
+[embed]
+kind      = "none"
+model     = "bge-m3"
+dims      = 1024
+batch_size = 64
+rps       = 0          # 0 表示不限流
+timeout_s = 120
+
+# 本地 Ollama 示例：
+# [embed]
+# kind      = "ollama"
+# base_url  = "http://127.0.0.1:11434"
+# model     = "bge-m3"
+# dims      = 1024
+# timeout_s = 120
+
+# 云端 OpenAI 兼容示例：
+# [embed]
+# kind        = "openai"
+# base_url    = "https://api.siliconflow.cn/v1"
+# api_key_env = "SILICONFLOW_API_KEY"
+# model       = "BAAI/bge-m3"
+# dims        = 1024
+# rps         = 8
+
+# 阿里千问（DashScope）示例：注意 batch_size 必须 ≤10，否则接口直接 400
+# [embed]
+# kind        = "openai"
+# base_url    = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+# api_key_env = "DASHSCOPE_API_KEY"
+# model       = "text-embedding-v4"
+# dims        = 1024          # v4 支持 1024 / 768 / 512
+# batch_size  = 10
+# rps         = 8
+
+# 自定义 HTTP 示例（请求模板里的 {{model}} 与 {{text}} 会被替换并正确转义）：
+# [embed]
+# kind            = "custom"
+# base_url        = "http://127.0.0.1:8080/embed"
+# model           = "local"
+# dims            = 768
+# request_template = '{"inputs":"{{text}}"}'
+# response_path   = "0"      # 从响应 JSON 里取向量的点路径，"-" 表示响应本身就是数组
+
+# ---- 重排（可选）----
+# 不配置时按 RRF 融合分排序，检索照常工作。
+[rerank]
+kind      = "none"
+model     = "bge-reranker-v2-m3"
+timeout_s = 60
+# [rerank]
+# kind        = "openai"
+# base_url    = "https://api.siliconflow.cn/v1"
+# api_key_env = "SILICONFLOW_API_KEY"
+# model       = "BAAI/bge-reranker-v2-m3"
+
+# ---- 检索与切分参数 ----
+[rag]
+top_k_vector  = 30     # 向量召回候选数
+top_k_keyword = 30     # 关键词召回候选数
+top_k_rerank  = 10     # 重排后保留条数
+chunk_tokens  = 600    # 单块目标 token
+chunk_overlap = 0.12   # 块间重叠比例
+enable_rerank = true   # 没配重排后端时自动跳过

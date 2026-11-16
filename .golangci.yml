@@ -1,0 +1,41 @@
+# golangci-lint 配置。
+#
+# 分层依赖方向（架构纲要 §2.3）由 scripts/check-layering.sh 检查，
+# 而不是 depguard：depguard v2 内置的 "Main" 规则无法被用户配置覆盖，
+# 会拒绝一切未被显式放行的 import，无法表达"只禁止某些层"的语义。
+version: "2"
+
+run:
+  timeout: 3m
+
+linters:
+  default: standard
+  disable:
+    # 清理路径上的 Close/Fprintf 报错噪音大，且不会影响主流程。
+    - errcheck
+  enable:
+    - misspell
+    - unconvert
+    - bodyclose
+    - sqlclosecheck
+    - rowserrcheck
+    - noctx
+
+  settings:
+    noctx:
+      exclude-files:
+        - ".*_test\\.go"
+
+  exclusions:
+    paths:
+      # scratch 下是一次性实验与冒烟程序，不纳入质量门禁。
+      - "scratch/.*"
+    rules:
+      # 测试代码用无 ctx 的便捷方法可读性更好。
+      - path: ".*_test\\.go"
+        linters:
+          - noctx
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

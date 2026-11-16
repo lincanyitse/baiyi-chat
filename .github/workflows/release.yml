@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: 构建前端
+        run: npm --prefix web ci && npm --prefix web test && npm --prefix web run build
+
+      - name: 交叉编译
+        env:
+          VERSION: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}"
+          for t in windows/amd64 linux/amd64 linux/arm64 darwin/amd64 darwin/arm64; do
+            os=${t%/*}
+            arch=${t#*/}
+            out="dist/baiyi-${os}-${arch}"
+            if [ "$os" = "windows" ]; then
+              bin="${out}.exe"
+            else
+              bin="$out"
+            fi
+            echo "  ${os}/${arch} -> ${bin}"
+            GOOS="$os" GOARCH="$arch" CGO_ENABLED=0 go build -trimpath -ldflags "$ldflags" -o "$bin" ./cmd/baiyi
+            if [ "$os" = "windows" ]; then
+              (cd dist && zip "baiyi-${os}-${arch}.zip" "$(basename "$bin")")
+            else
+              tar -C dist -czf "dist/baiyi-${os}-${arch}.tar.gz" "$(basename "$bin")"
+            fi
+            rm -f "$bin"
+          done
+          ls -lh dist
+
+      - name: 上传到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.zip
+            dist/*.tar.gz

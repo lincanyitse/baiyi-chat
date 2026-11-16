@@ -1,0 +1,266 @@
+/* 设计令牌。组件只引用变量，不写死颜色与尺寸。
+ *
+ * 视觉语言：暖灰画布 + 深青强调 + 磨砂蓝品牌色。低对比、克制的
+ * 分隔线与轻投影，正文不加装饰——长时间阅读时噪音比单调更伤人。
+ *
+ * 变量名是公共契约（组件里被引用 1200+ 次），只改值不改名字。
+ * UnoCSS 的 theme 也全部指向这里的变量，令牌是唯一真源。 */
+
+:root,
+:root[data-theme='light'] {
+  /* 画布与表面 */
+  --bg: #f5f3ef;
+  --bg-subtle: #eeebe5;
+  --surface: #fbfaf8;
+  --surface-2: #f0ede7;
+  --surface-hover: #e8e4dc;
+
+  /* 文字 */
+  --fg: #26302f;
+  --fg-secondary: #4f5a58;
+  --muted: #7c8582;
+  --faint: #a7adaa;
+
+  /* 线条 */
+  --border: #e2ded6;
+  --border-strong: #cfc9be;
+
+  /* 强调色：默认靛蓝。深青等其他预设通过 data-accent 覆写，
+   * 见文件末尾的强调色表。 */
+  --accent: #4a5bd9;
+  --accent-hover: #3c4abb;
+  --accent-soft: #e9ecfa;
+  --accent-fg: #fbfaf8;
+
+  /* 品牌色：磨砂蓝，只用于字标、几何纹与次级条 */
+  --brand: #34557a;
+  --brand-soft: #e6edf4;
+
+  /* 语义色 */
+  --danger: #b9453a;
+  --danger-soft: #faeae7;
+  --success: #24714d;
+  --warning: #a76516;
+
+  /* 圆角 */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-full: 999px;
+
+  /* 间距 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* 字号 */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-lg: 1.0625rem;
+
+  /* 版式 */
+  --sans: 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Consolas, 'Courier New', monospace;
+  --brand-font: 'Songti SC', 'Noto Serif SC', 'SimSun', serif;
+  --reading-width: 47rem; /* 正文最大行宽，超过这个宽度阅读会累 */
+
+  /* 阴影：带青调，只给卡片与浮层 */
+  --shadow-sm: 0 1px 2px rgba(38, 48, 47, 0.05);
+  --shadow-md: 0 4px 16px rgba(38, 48, 47, 0.07);
+  --shadow-lg: 0 12px 40px rgba(38, 48, 47, 0.1);
+
+  color-scheme: light;
+  font: var(--fs-base) / 1.6 var(--sans);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 暗色只留一套。appearance.js 会把「跟随系统」解析成实际的
+ * light / dark 写进 data-theme，所以 CSS 不需要媒体查询，
+ * 也不会出现手动选亮色被系统偏好盖回去的问题。 */
+:root[data-theme='dark'] {
+  --bg: #171c1d;
+  --bg-subtle: #131819;
+  --surface: #1e2526;
+  --surface-2: #262e2f;
+  --surface-hover: #2e3738;
+
+  --fg: #e6e9e6;
+  --fg-secondary: #b3bcba;
+  --muted: #8b9694;
+  --faint: #626e6c;
+
+  --border: #2c3536;
+  --border-strong: #3b4647;
+
+  --accent: #93a4f5;
+  --accent-hover: #aebcf8;
+  --accent-soft: #232946;
+  --accent-fg: #10131c;
+
+  --brand: #8fadd0;
+  --brand-soft: #1e2a36;
+
+  --danger: #ea8980;
+  --danger-soft: #33211f;
+  --success: #64bd90;
+  --warning: #dda954;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+/* 强调色预设。只覆写 4 个 --accent*，其余令牌不动。
+ *
+ * 每档都要分别给明暗两套：暗色下用更亮、更低饱和的值保证对比度。
+ * 选择器带上 data-theme 是为了压过上面的 :root[data-theme='dark']。 */
+:root[data-accent='teal'] {
+  --accent: #2f6f6b;
+  --accent-hover: #265c58;
+  --accent-soft: #e2efed;
+  --accent-fg: #fbfaf8;
+}
+:root[data-accent='teal'][data-theme='dark'] {
+  --accent: #7fb9b2;
+  --accent-hover: #96cbc4;
+  --accent-soft: #20332f;
+  --accent-fg: #10191a;
+}
+:root[data-accent='plum'] {
+  --accent: #8455a8;
+  --accent-hover: #704293;
+  --accent-soft: #f0e9f6;
+  --accent-fg: #fbfaf8;
+}
+:root[data-accent='plum'][data-theme='dark'] {
+  --accent: #c39adb;
+  --accent-hover: #d4b5e8;
+  --accent-soft: #302138;
+  --accent-fg: #160e1c;
+}
+:root[data-accent='amber'] {
+  --accent: #a5671f;
+  --accent-hover: #8c5618;
+  --accent-soft: #f7eee0;
+  --accent-fg: #fbfaf8;
+}
+:root[data-accent='amber'][data-theme='dark'] {
+  --accent: #e2b269;
+  --accent-hover: #efc588;
+  --accent-soft: #352a18;
+  --accent-fg: #1a1308;
+}
+
+/* 字号档位。改根字号而不是逐个组件设 font-size：
+ * 组件的尺寸都用 rem 表达，一处改全局生效。 */
+:root[data-font='small'] {
+  font-size: 15px;
+}
+:root[data-font='large'] {
+  font-size: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden; /* 滚动交给内部区域，避免整页弹动 */
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* 滚动条：细、低对比，不抢视线 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--r-full);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--faint);
+}
+
+/* 焦点可见性：只对键盘用户显示，鼠标点击不出现外框 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 引用标记由 markdown.js 在 {@html} 里动态生成，
+ * Svelte scoped 与 UnoCSS 静态提取都覆盖不到，只能放全局。 */
+.cite-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 2px;
+  margin: 0 1px;
+  vertical-align: super;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cite-mark:hover {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

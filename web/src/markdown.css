@@ -1,0 +1,214 @@
+/* Markdown 正文排版。
+ *
+ * 必须写成全局样式：{@html} 插入的节点不带 Svelte 的作用域属性，
+ * 组件内的 <style> 选择器命中不了它们。
+ *
+ * 目标是「像一本排版好的书」——行高、段距、列表缩进都按长文阅读调过，
+ * 而不是浏览器默认的紧凑堆叠。 */
+
+.markdown {
+  line-height: 1.75;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.markdown > *:first-child {
+  margin-top: 0;
+}
+.markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown p {
+  margin: 0 0 1em;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  margin: 1.6em 0 0.6em;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fg);
+}
+
+.markdown h1 {
+  font-size: 1.5em;
+}
+.markdown h2 {
+  font-size: 1.28em;
+}
+.markdown h3 {
+  font-size: 1.12em;
+}
+.markdown h4 {
+  font-size: 1em;
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 0 0 1em;
+  padding-left: 1.5em;
+}
+
+.markdown li {
+  margin: 0.3em 0;
+}
+
+.markdown li > p {
+  margin: 0.3em 0;
+}
+
+.markdown blockquote {
+  margin: 1em 0;
+  padding: 0.2em 0 0.2em 1em;
+  border-left: 3px solid var(--border-strong);
+  color: var(--fg-secondary);
+}
+
+.markdown a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.markdown a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.markdown code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: var(--r-sm);
+}
+
+.markdown pre.code-block {
+  margin: 0;
+  padding: var(--sp-4);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  overflow-x: auto;
+}
+
+.markdown pre.code-block code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+/* 代码块容器：头部一行放语言标签与复制按钮，正文紧贴其下 */
+.markdown .code-wrap {
+  margin: 1em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.markdown .code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown .code-lang {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.markdown .code-copy {
+  background: none;
+  border: none;
+  padding: 2px 8px;
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.markdown .code-copy:hover {
+  background: var(--surface-hover);
+  color: var(--fg);
+}
+
+/* highlight.js 配色：全部走设计令牌，自动跟随明暗主题。
+ * 类名参考 github-dark 的层次（关键字/字符串/数字/注释/函数名）。 */
+.markdown .hljs-keyword,
+.markdown .hljs-selector-tag,
+.markdown .hljs-literal,
+.markdown .hljs-section {
+  color: var(--brand);
+  font-weight: 600;
+}
+.markdown .hljs-string,
+.markdown .hljs-attr,
+.markdown .hljs-symbol {
+  color: var(--success);
+}
+.markdown .hljs-number,
+.markdown .hljs-bullet {
+  color: var(--warning);
+}
+.markdown .hljs-comment,
+.markdown .hljs-quote {
+  color: var(--muted);
+  font-style: italic;
+}
+.markdown .hljs-title,
+.markdown .hljs-name,
+.markdown .hljs-function {
+  color: var(--accent);
+}
+.markdown .hljs-built_in,
+.markdown .hljs-type {
+  color: var(--fg-secondary);
+}
+.markdown .hljs-deletion {
+  color: var(--danger);
+}
+.markdown .hljs-addition {
+  color: var(--success);
+}
+
+.markdown table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.markdown th {
+  background: var(--bg-subtle);
+  font-weight: 600;
+}
+
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.8em 0;
+}
+
+.markdown img {
+  max-width: 100%;
+  border-radius: var(--r-md);
+}
+
+.markdown input[type='checkbox'] {
+  margin-right: 0.4em;
+}

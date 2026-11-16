@@ -1,0 +1,59 @@
+# ---- Go ----
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.pprof
+coverage.txt
+coverage.html
+
+# 构建产物目录
+/bin/
+/dist/
+
+# ---- 测试与临时文件 ----
+*.tmp
+*.bak
+*.orig
+*.swp
+*~
+
+# 一次性实验与临时产物（只放垃圾，不放想保留的东西）
+/scratch/
+
+# ---- 本地运行数据（数据目录永远不进版本库）----
+/data/
+*.db
+*.db-wal
+*.db-shm
+secrets.dat
+
+# ---- 配置（含密钥或个人路径的本地配置）----
+/config.local.toml
+.env
+.env.local
+
+# ---- 前端（M3 起）----
+node_modules/
+/web/dist/
+/web/.vite/
+# Vite 产物直接落在 Go 包里（go:embed 不能引用包外路径），只保留占位文件
+/internal/channel/web/dist/*
+!/internal/channel/web/dist/.gitkeep
+
+# ---- 本地代码索引（CodeGraph 生成，非源码）----
+/.codegraph/
+
+# ---- 编辑器 / IDE ----
+.idea/
+.vscode/
+*.sublime-*
+
+# ---- 操作系统 ----
+Thumbs.db
+Desktop.ini
+.DS_Store
